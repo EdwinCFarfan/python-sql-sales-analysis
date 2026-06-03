@@ -33,6 +33,36 @@ Se analiza la frecuencia de compra de cada cliente.
 
 Se calcula el precio promedio de los productos disponibles.
 
+## 📈 Resultado de Ejecución
+
+```text
+========================================
+CLIENTES CON MAYOR GASTO
+========================================
+Juan Perez: $1250.00
+Carlos Ruiz: $1200.00
+Maria Gomez: $50.00
+
+========================================
+PRODUCTOS MÁS VENDIDOS
+========================================
+Mouse: 5 unidades
+Notebook: 2 unidades
+Teclado: 1 unidad
+
+========================================
+CANTIDAD DE PEDIDOS POR CLIENTE
+========================================
+Juan Perez: 2 pedido(s)
+Maria Gomez: 1 pedido(s)
+Carlos Ruiz: 1 pedido(s)
+
+========================================
+PRECIO PROMEDIO DE PRODUCTOS
+========================================
+$425.00
+```
+
 ## 🧠 Habilidades Demostradas
 
 - Python

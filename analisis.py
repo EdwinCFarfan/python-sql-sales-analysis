@@ -1,47 +1,95 @@
-import csv
+import sqlite3
 
-ventas_totales = 0
-productos = {}
-clientes = {}
+# Conectar a la base de datos
+conexion = sqlite3.connect("ventas.db")
 
-with open("ventas.csv", "r") as archivo:
-    lector = csv.DictReader(archivo)
+# Crear cursor
+cursor = conexion.cursor()
 
-    for fila in lector:
+# Consulta 1: Total gastado por cliente
+consulta_clientes = """
+SELECT
+    c.nombre,
+    SUM(pr.precio * dp.cantidad) AS total_gastado
+FROM clientes c
+JOIN pedidos p
+    ON c.id = p.cliente_id
+JOIN Detalle_Pedidos dp
+    ON p.id = dp.pedido_id
+JOIN productos pr
+    ON dp.producto_id = pr.id
+GROUP BY c.nombre
+ORDER BY total_gastado DESC;
+"""
 
-        cliente = fila["cliente"]
-        producto = fila["producto"]
-        cantidad = int(fila["cantidad"])
-        precio = float(fila["precio"])
+cursor.execute(consulta_clientes)
+clientes = cursor.fetchall()
 
-        total = cantidad * precio
+print("=" * 40)
+print("CLIENTES CON MAYOR GASTO")
+print("=" * 40)
 
-        ventas_totales += total
+for nombre, gasto in clientes:
+    print(f"{nombre}: ${gasto:.2f}")
 
-        if producto in productos:
-            productos[producto] += cantidad
-        else:
-            productos[producto] = cantidad
+# Consulta 2: Productos más vendidos
+consulta_productos = """
+SELECT
+    pr.nombre,
+    SUM(dp.cantidad) AS unidades_vendidas
+FROM productos pr
+JOIN Detalle_Pedidos dp
+    ON pr.id = dp.producto_id
+GROUP BY pr.nombre
+ORDER BY unidades_vendidas DESC;
+"""
 
-        if cliente in clientes:
-            clientes[cliente] += total
-        else:
-            clientes[cliente] = total
+cursor.execute(consulta_productos)
+productos = cursor.fetchall()
 
-print("VENTAS TOTALES")
-print(f"${ventas_totales:.2f}")
+print("\n" + "=" * 40)
+print("PRODUCTOS MÁS VENDIDOS")
+print("=" * 40)
 
-print("\nPRODUCTOS MÁS VENDIDOS")
+for producto, cantidad in productos:
+    print(f"{producto}: {cantidad} unidades")
 
-for producto, cantidad in sorted(productos.items(), key=lambda x: x[1], reverse=True):
-    print(producto, cantidad)
+# Consulta 3: Cantidad de pedidos por cliente
+consulta_pedidos = """
+SELECT
+    c.nombre,
+    COUNT(p.id) AS cantidad_pedidos
+FROM clientes c
+JOIN pedidos p
+    ON c.id = p.cliente_id
+GROUP BY c.nombre
+ORDER BY cantidad_pedidos DESC;
+"""
 
-print("\nGASTO POR CLIENTE")
+cursor.execute(consulta_pedidos)
+pedidos = cursor.fetchall()
 
-for cliente, gasto in sorted(clientes.items(), key=lambda x: x[1], reverse=True):
-    print(cliente, gasto)
+print("\n" + "=" * 40)
+print("CANTIDAD DE PEDIDOS POR CLIENTE")
+print("=" * 40)
 
-cliente_top = max(clientes, key=clientes.get)
+for cliente, cantidad in pedidos:
+    print(f"{cliente}: {cantidad} pedido(s)")
 
-print("\nCLIENTE CON MAYOR GASTO")
-print(cliente_top, clientes[cliente_top])
+# Consulta 4: Precio promedio de productos
+consulta_promedio = """
+SELECT AVG(precio)
+FROM productos;
+"""
+
+cursor.execute(consulta_promedio)
+promedio = cursor.fetchone()
+
+print("\n" + "=" * 40)
+print("PRECIO PROMEDIO DE PRODUCTOS")
+print("=" * 40)
+
+print(f"${promedio[0]:.2f}")
+
+# Cerrar conexión
+conexion.close()
